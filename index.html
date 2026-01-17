@@ -1229,10 +1229,10 @@
             </div>
             
             <div class="page-nav">
-                <button class="nav-btn prev" data-prev="welcome">
+                <button class="nav-btn prev" data-page="welcome">
                     <i class="fas fa-arrow-left"></i> Back Home
                 </button>
-                <button class="nav-btn" data-next="gallery">
+                <button class="nav-btn" data-page="gallery">
                     See Memories <i class="fas fa-arrow-right"></i>
                 </button>
             </div>
@@ -1284,10 +1284,10 @@
             </div>
             
             <div class="page-nav">
-                <button class="nav-btn prev" data-prev="message">
+                <button class="nav-btn prev" data-page="message">
                     <i class="fas fa-arrow-left"></i> Back to Message
                 </button>
-                <button class="nav-btn" data-next="wishes">
+                <button class="nav-btn" data-page="wishes">
                     Birthday Wishes <i class="fas fa-arrow-right"></i>
                 </button>
             </div>
@@ -1358,10 +1358,10 @@
             </div>
             
             <div class="page-nav">
-                <button class="nav-btn prev" data-prev="gallery">
+                <button class="nav-btn prev" data-page="gallery">
                     <i class="fas fa-arrow-left"></i> Back to Memories
                 </button>
-                <button class="nav-btn" data-next="welcome">
+                <button class="nav-btn" data-page="welcome">
                     Back to Start <i class="fas fa-home"></i>
                 </button>
             </div>
@@ -1399,122 +1399,154 @@
     </div>
 
     <script>
-        // Create animated background elements
-        createBackgroundElements();
+        // Complete working solution - सगळे navigation issues fixed
+        let isScrolling = false;
+        let confettiElements = [];
         
-        // Initialize confetti system
-        initializeConfetti();
-        
-        // Mobile menu functionality
-        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-        const navLinks = document.getElementById('navLinks');
-        
-        mobileMenuBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            navLinks.classList.toggle('active');
-            this.innerHTML = navLinks.classList.contains('active') ? 
-                '<i class="fas fa-times"></i>' : '<i class="fas fa-bars"></i>';
-        });
-        
-        // Navbar scroll effect
-        const navbar = document.getElementById('navbar');
-        window.addEventListener('scroll', function() {
-            if (window.scrollY > 100) {
-                navbar.classList.add('scrolled');
-            } else {
-                navbar.classList.remove('scrolled');
-            }
+        document.addEventListener('DOMContentLoaded', function() {
+            createBackgroundElements();
+            initializeConfetti();
             
-            // Show/hide scroll to top button
-            const scrollTopBtn = document.getElementById('scrollTop');
-            if (window.scrollY > 500) {
-                scrollTopBtn.style.display = 'flex';
-            } else {
-                scrollTopBtn.style.display = 'none';
-            }
-        });
-        
-        // Page navigation system
-        const pages = document.querySelectorAll('.page-container');
-        const navLinksAll = document.querySelectorAll('.nav-link');
-        const startBtn = document.getElementById('startBtn');
-        
-        function showPage(pageId) {
-            // Hide all pages
-            pages.forEach(page => {
-                page.classList.remove('active');
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const navLinks = document.getElementById('navLinks');
+            const navbar = document.getElementById('navbar');
+            const pages = document.querySelectorAll('.page-container');
+            const navLinksAll = document.querySelectorAll('.nav-link');
+            const startBtn = document.getElementById('startBtn');
+            
+            // Page navigation function - COMPLETELY FIXED
+            window.showPage = function(pageId) {
+                console.log('Navigating to:', pageId);
+                
+                // Hide all pages
+                pages.forEach(page => {
+                    page.classList.remove('active');
+                    page.style.display = 'none';
+                });
+                
+                // Show target page
+                const targetPage = document.getElementById(pageId);
+                if (targetPage) {
+                    targetPage.style.display = 'block';
+                    setTimeout(() => {
+                        targetPage.classList.add('active');
+                    }, 10);
+                }
+                
+                // Update navigation active state
+                navLinksAll.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('data-page') === pageId) {
+                        link.classList.add('active');
+                    }
+                });
+                
+                // Close mobile menu
+                if (window.innerWidth <= 768 && navLinks.classList.contains('active')) {
+                    navLinks.classList.remove('active');
+                    mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
+                }
+                
+                // Effects
+                createConfettiStorm();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+            
+            // Header navigation links - DIRECT EVENT BINDING
+            navLinksAll.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const pageId = this.getAttribute('data-page');
+                    console.log('Header nav clicked:', pageId);
+                    if (pageId) {
+                        showPage(pageId);
+                    }
+                });
             });
             
-            // Show selected page
-            const targetPage = document.getElementById(pageId);
-            if (targetPage) {
-                targetPage.classList.add('active');
+            // Start button
+            if (startBtn) {
+                startBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Start button clicked');
+                    showPage('message');
+                });
             }
             
-            // Update active nav link
-            navLinksAll.forEach(link => {
-                link.classList.remove('active');
-                if (link.dataset.page === pageId) {
-                    link.classList.add('active');
+            // Navigation buttons (prev/next)
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const pageId = this.getAttribute('data-page');
+                    console.log('Nav button clicked:', pageId);
+                    if (pageId) {
+                        showPage(pageId);
+                    }
+                });
+            });
+            
+            // Mobile menu toggle
+            mobileMenuBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const isActive = navLinks.classList.contains('active');
+                if (isActive) {
+                    navLinks.classList.remove('active');
+                    this.innerHTML = '<i class="fas fa-bars"></i>';
+                } else {
+                    navLinks.classList.add('active');
+                    this.innerHTML = '<i class="fas fa-times"></i>';
                 }
             });
             
-            // Close mobile menu
-            if (window.innerWidth <= 768) {
-                navLinks.classList.remove('active');
-                mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
-            }
+            // Scroll events
+            window.addEventListener('scroll', function() {
+                if (!isScrolling) {
+                    window.requestAnimationFrame(function() {
+                        if (window.scrollY > 100) {
+                            navbar.classList.add('scrolled');
+                        } else {
+                            navbar.classList.remove('scrolled');
+                        }
+                        
+                        const scrollTopBtn = document.getElementById('scrollTop');
+                        if (window.scrollY > 500) {
+                            scrollTopBtn.style.display = 'flex';
+                        } else {
+                            scrollTopBtn.style.display = 'none';
+                        }
+                        isScrolling = false;
+                    });
+                }
+                isScrolling = true;
+            });
             
-            // Create confetti effect
-            createConfettiStorm();
+            // Click effects
+            document.addEventListener('click', function(e) {
+                createClickEffect(e.clientX, e.clientY);
+            });
+            
+            // Close mobile menu when clicking outside
+            document.addEventListener('click', function(e) {
+                if (window.innerWidth <= 768 && 
+                    !e.target.closest('.nav-links') && 
+                    !e.target.closest('.mobile-menu-btn') &&
+                    navLinks.classList.contains('active')) {
+                    navLinks.classList.remove('active');
+                    mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
+                }
+            });
             
             // Scroll to top
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-        
-        // Navigation link clicks
-        navLinksAll.forEach(link => {
-            link.addEventListener('click', function(e) {
+            document.getElementById('scrollTop').addEventListener('click', function(e) {
                 e.preventDefault();
-                e.stopPropagation();
-                showPage(this.dataset.page);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             });
-        });
-        
-        // Start button click
-        startBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            this.classList.add('clicked');
-            setTimeout(() => {
-                this.classList.remove('clicked');
-                showPage('message');
-            }, 300);
-        });
-        
-        // Navigation buttons
-        document.querySelectorAll('.nav-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                if (this.dataset.next) showPage(this.dataset.next);
-                if (this.dataset.prev) showPage(this.dataset.prev);
-            });
-        });
-        
-        // Scroll to top button
-        document.getElementById('scrollTop').addEventListener('click', function(e) {
-            e.preventDefault();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-        
-        // Create click effects
-        document.addEventListener('click', function(e) {
-            createClickEffect(e.clientX, e.clientY);
-        });
-        
-        // Show welcome page on load
-        window.addEventListener('load', function() {
+            
+            // Initialize with welcome page
             showPage('welcome');
         });
         
@@ -1575,10 +1607,18 @@
             }
         }
         
-        // Create single confetti piece
+        // Fixed confetti with proper cleanup
         function createConfettiPiece(container) {
+            if (confettiElements.length > 100) {
+                const oldConfetti = confettiElements.shift();
+                if (oldConfetti && oldConfetti.parentNode) {
+                    oldConfetti.remove();
+                }
+            }
+            
             const confetti = document.createElement('div');
             confetti.className = 'confetti';
+            confettiElements.push(confetti);
             
             const colors = ['#ff4d6d', '#8338ec', '#ff006e', '#3a86ff', '#ff9e00', '#06d6a0'];
             confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
@@ -1601,9 +1641,12 @@
             
             container.appendChild(confetti);
             
-            // Remove after animation
             setTimeout(() => {
-                confetti.remove();
+                if (confetti && confetti.parentNode) {
+                    confetti.remove();
+                    const index = confettiElements.indexOf(confetti);
+                    if (index > -1) confettiElements.splice(index, 1);
+                }
             }, 5000);
         }
         
@@ -1628,7 +1671,9 @@
             document.body.appendChild(effect);
             
             setTimeout(() => {
-                effect.remove();
+                if (effect.parentNode) {
+                    effect.remove();
+                }
             }, 600);
         }
         
@@ -1646,23 +1691,34 @@
             createConfettiStorm();
         }
         
-        // Auto-create some confetti periodically
-        setInterval(() => {
-            if (Math.random() > 0.7) {
+        // Optimized periodic confetti
+        let confettiInterval = setInterval(() => {
+            if (Math.random() > 0.8 && confettiElements.length < 50) {
                 createConfettiStorm();
             }
-        }, 5000);
+        }, 8000);
         
-        // Add some interactive effects
-        document.querySelectorAll('.quality-card, .photo-card, .wish-card').forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.style.zIndex = '10';
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            clearInterval(confettiInterval);
+            confettiElements.forEach(el => {
+                if (el && el.parentNode) el.remove();
             });
-            
-            card.addEventListener('mouseleave', function() {
-                this.style.zIndex = '';
-            });
+            confettiElements = [];
         });
+        
+        // Optimized hover effects with event delegation
+        document.addEventListener('mouseenter', function(e) {
+            if (e.target.matches('.quality-card, .photo-card, .wish-card')) {
+                e.target.style.zIndex = '10';
+            }
+        }, true);
+        
+        document.addEventListener('mouseleave', function(e) {
+            if (e.target.matches('.quality-card, .photo-card, .wish-card')) {
+                e.target.style.zIndex = '';
+            }
+        }, true);
     </script>
 </body>
 </html>
